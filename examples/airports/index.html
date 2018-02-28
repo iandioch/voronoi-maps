@@ -9,7 +9,7 @@
 <body>
   <div id='map'>
   </div>
-  <div id='selections' class="selections">
+  <div id='selections' class="selections" style="display:none">
     <a href='#' class="show">Choose what supermarkets to display</a>
     <div class='content'>
       <a href='#' class="hide">Hide</a>
@@ -31,6 +31,7 @@
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.4.8/d3.min.js"></script>
+  <script src="https://d3js.org/d3-color.v1.min.js"></script>
   <script src="https://api.tiles.mapbox.com/mapbox.js/v2.2.1/mapbox.js"></script>
   <script src="./voronoi_map.js"></script>
   <script>
@@ -39,6 +40,7 @@
       .fitBounds([[59.355596 , -9.052734], [49.894634 , 3.515625]]);
 
     url = 'https://raw.githubusercontent.com/iandioch/voronoi-maps/master/examples/airports/airports.csv';
+    routes_url = 'https://raw.githubusercontent.com/iandioch/voronoi-maps/master/examples/airports/routes.csv';
     initialSelection = d3.set(["airport"]);
     voronoiMap(map, url, initialSelection);
   </script>

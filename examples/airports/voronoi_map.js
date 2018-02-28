@@ -54,7 +54,7 @@ voronoiMap = function(map, url, initialSelections) {
 
     labels.append("span")
       .attr('class', 'key')
-      .style('background-color', function(d) { return '#' + d.color; });
+      .style('background-color', function(d) { return d.color; });
 
     labels.append("span")
       .text(function(d) { return d.type; });
@@ -142,8 +142,8 @@ voronoiMap = function(map, url, initialSelections) {
 
     svgPoints.append("circle")
       .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
-      .style('fill', function(d) { return '#' + d.color } )
-      .attr("r", 2);
+      .style('fill', function(d) { return d.color } )
+      .attr("r", 2.5 );
   }
 
   var mapLayer = {
@@ -157,33 +157,64 @@ voronoiMap = function(map, url, initialSelections) {
 
   console.log("hi");
   map.on('ready', function() {
-    d3.csv(url, function(d) {
-      return {
-        id: +d.id,
-        url: null,
-        latitude: +d.latitude,
-        longitude: +d.longitude,
-        type: d.type,
-        name: d.name + " (" + d.iata + ")",
-        color: "#FFFFFF",
-        iata: d.iata
-      }
-    }, function(csv) {
-      //points = csv;
-      var i = 0;
-      csv.forEach(function(point) {
-        pointTypes.set(point.type, {type: point.type, color: point.color});
-        if (i < 3) {
-            console.log(point);
+    d3.csv(routes_url, function(routes_csv) {
+        var airports = {};
+        routes_csv.forEach(function(airport) {
+            if (airport.source_airport in airports) {
+                airports[airport.source_airport] ++;
+            } else {
+                airports[airport.source_airport] = 1;
+            }
+            if (airport.destination_airport in airports) {
+                airports[airport.destination_airport] ++;
+            } else {
+                airports[airport.destination_airport] = 1;
+            }
+        });
+        let airportMax = 0, airportMin = 5000000;
+        for (var airport in airports) {
+            if (airports[airport] > airportMax) {
+                airportMax = airports[airport];
+            }
+            if (airports[airport] < airportMin) {
+                airportMin = airports[airport];
+            }
         }
-        if (point.iata != '\\N') {
-          points.push(point);
+        airportRoutes = Object.values(airports)
+        var colourCalc = function(a) {
+            return d3.hsl(a/6.0, a/(airportMax + 0.0), 0.5).toString()
+            //return d3.hsl(180*(a - airportMin - 0.0)/(airportMax-airportMin), 50, 50).toString();
         }
-        if (point.type != 'airport') console.log(point);
-        i ++;
-      })
-      drawPointTypeSelection();
-      map.addLayer(mapLayer);
+        d3.csv(url, function(d) {
+          return {
+            id: +d.id,
+            url: null,
+            latitude: +d.latitude,
+            longitude: +d.longitude,
+            type: d.type,
+            name: d.name + " (" + d.iata + ") serves " + d.city + " with " + airports[d.iata] + " routes",
+            color: colourCalc(airports[d.iata]),
+            iata: d.iata,
+            count: airports[d.iata],
+            city: d.city
+          }
+        }, function(csv) {
+          //points = csv;
+          var i = 0;
+          csv.forEach(function(point) {
+            pointTypes.set(point.type, {type: point.type, color: point.color});
+            if (i < 3) {
+                console.log(point);
+            }
+            if (point.iata != '\\N' && point.iata in airports && airports[point.iata] > 10) {
+              points.push(point);
+            }
+            if (point.type != 'airport') console.log(point);
+            i ++;
+          })
+          drawPointTypeSelection();
+          map.addLayer(mapLayer);
+        })
     })
   });
 }
