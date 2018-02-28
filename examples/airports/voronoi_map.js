@@ -164,17 +164,22 @@ voronoiMap = function(map, url, initialSelections) {
         latitude: +d.latitude,
         longitude: +d.longitude,
         type: d.type,
-        name: d.name,
-        color: "#FFFFFF"
+        name: d.name + " (" + d.iata + ")",
+        color: "#FFFFFF",
+        iata: d.iata
       }
     }, function(csv) {
-      points = csv;
+      //points = csv;
       var i = 0;
-      points.forEach(function(point) {
+      csv.forEach(function(point) {
         pointTypes.set(point.type, {type: point.type, color: point.color});
         if (i < 3) {
             console.log(point);
         }
+        if (point.iata != '\\N') {
+          points.push(point);
+        }
+        if (point.type != 'airport') console.log(point);
         i ++;
       })
       drawPointTypeSelection();
